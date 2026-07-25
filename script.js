@@ -7,7 +7,16 @@ let recentHint = "";
 let timerInterval = null;
 let timeLeft = 30;
 
-// Unique avatars and neon hex codes for the AI bot roster
+// Undertale Archive Soundtrack Resource List
+const playlist = [
+    { title: "Megalovania", url: "https://archive.org" },
+    { title: "Bonetrousle", url: "https://archive.org" },
+    { title: "Spear of Justice", url: "https://archive.org" },
+    { title: "Death by Glamour", url: "https://archive.org" }
+];
+let currentTrackIndex = 0;
+let isMuted = false;
+
 const botProfiles = [
     { name: "ByteSmasher", color: "#ff3366", avatar: "💥" },
     { name: "GlitchHunter", color: "#00ffcc", avatar: "🛰️" },
@@ -30,26 +39,43 @@ const vocabulary = [
     "cipher", "vortex", "system", "crypto", "shield", "bypass", "access", "breach"
 ];
 
+function toggleMute() {
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('mute-btn');
+    isMuted = !isMuted;
+    audio.muted = isMuted;
+    btn.innerText = isMuted ? "🔇" : "🔊";
+}
+
+function playNextTrack() {
+    const audio = document.getElementById('bg-music');
+    currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+    audio.src = playlist[currentTrackIndex].url;
+    document.getElementById('track-name').innerText = `🎵 ${playlist[currentTrackIndex].title}`;
+    audio.play().catch(e => console.log("Waiting for touch interact..."));
+}
+
 function startAiGame() {
-    const music = document.getElementById('bg-music');
-    music.play().catch(err => console.log("Audio waiting for user click interaction fallback."));
     const passField = document.getElementById('secret-password');
     secretPassword = passField.value.trim().toLowerCase();
     if(!secretPassword) return alert("Please type a password first!");
 
+    // Boot audio player timeline
+    const audio = document.getElementById('bg-music');
+    audio.src = playlist[currentTrackIndex].url;
+    audio.play().catch(e => console.log("Audio target loaded. Waiting for click interaction."));
+
     botCount = parseInt(document.getElementById('ai-count').value);
     difficulty = document.getElementById('difficulty').value;
 
-    // Scale guess counts dynamically based on the total number of bots entered
     aiGuessesLeft = 5 + (botCount * 2);
     document.getElementById('guesses-left').innerText = aiGuessesLeft;
 
     document.getElementById('setup-screen').classList.add('hidden');
     document.getElementById('game-play').classList.remove('hidden');
 
-    logSystem(`Match Staged: 1v${botCount} (${difficulty.toUpperCase()}). Encryption pool scaled to ${aiGuessesLeft} collective tries!`);
+    logSystem(`Match Staged: 1v${botCount} (${difficulty.toUpperCase()}). Firewall scaled to ${aiGuessesLeft} collective tries!`);
     
-    // Inject a visual structural box for the countdown timer if not present
     if(!document.getElementById('timer-display')) {
         const timerEl = document.createElement('h4');
         timerEl.id = "timer-display";
@@ -76,7 +102,7 @@ function startRoundTimer() {
         
         if(timeLeft <= 0) {
             clearInterval(timerInterval);
-            logAlert("⏰ TIME EXPIRED! You took too long to send a clue. The bots bypassed your turn!");
+            logAlert("⏰ TIME EXPIRED! Bypassing turn straight to AI calculations.");
             setTimeout(triggerAiTurn, 1000);
         }
     }, 1000);
@@ -116,7 +142,7 @@ function triggerAiTurn() {
         }
     }
 
-    appendBotMessage(activeBot.avatar, activeBot.name, activeBot.color, `Decryption guess structural analysis... "${aiGuess}"`);
+    appendBotMessage(activeBot.avatar, activeBot.name, activeBot.color, `Decryption guess analysis... "${aiGuess}"`);
 
     if (aiGuess === secretPassword) {
         logAlert(`❌ BREAKTHROUGH! ${activeBot.avatar} [${activeBot.name}] cracked your security password!`);
@@ -126,7 +152,7 @@ function triggerAiTurn() {
         endGame();
     } else {
         logSystem(`[${activeBot.name}] validation failure. Timer reset. Submit an adaptive clue configuration!`);
-        startRoundTimer(); // Restart the countdown timer for the player's next move
+        startRoundTimer();
     }
 }
 
@@ -136,7 +162,7 @@ function sendPlayerHint() {
     const hintText = input.value.trim().toLowerCase();
     if(!hintText) return;
 
-    clearInterval(timerInterval); // Stop timer while processing turn jumps
+    clearInterval(timerInterval);
     appendMessage("👑", "You (Host)", input.value);
     recentHint = hintText;
     input.value = "";
