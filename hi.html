@@ -7,9 +7,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<audio id="bg-music" loop src="https://google.com"></audio>
 
 <div class="game-container">
+    <!-- Sound Controller Panel -->
+    <div class="audio-panel">
+        <span id="track-name" class="track-ticker">🎵 Megalovania</span>
+        <button id="mute-btn" class="icon-btn" onclick="toggleMute()">🔊</button>
+    </div>
+
     <h1 class="neon-title">🔑 VS AI Battle</h1>
     
     <!-- Setup Stage Screen -->
@@ -62,6 +67,9 @@
         </div>
     </div>
 </div>
+
+<!-- Global Background Audio Engine -->
+<audio id="bg-music" onended="playNextTrack()"></audio>
 
 <script src="script.js"></script>
 </body>
