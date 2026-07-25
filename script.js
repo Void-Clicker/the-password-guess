@@ -31,6 +31,8 @@ const vocabulary = [
 ];
 
 function startAiGame() {
+    const music = document.getElementById('bg-music');
+    music.play().catch(err => console.log("Audio waiting for user click interaction fallback."));
     const passField = document.getElementById('secret-password');
     secretPassword = passField.value.trim().toLowerCase();
     if(!secretPassword) return alert("Please type a password first!");
