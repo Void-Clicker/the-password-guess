@@ -1,3 +1,6 @@
+// ==========================================
+// 1. GLOBAL STATE VARIABLES & SYSTEM PARAMETERS
+// ==========================================
 let secretPassword = "";
 let aiGuessesLeft = 5;
 let isGameOver = false;
@@ -6,8 +9,11 @@ let botCount = 8;
 let recentHint = "";
 let timerInterval = null;
 let timeLeft = 30;
+let currentGameMode = "host"; 
 
-// Undertale Archive Soundtrack Resource List
+// ==========================================
+// 2. UNDERTALE TRACK ROSTER & AUDIO MANAGEMENT
+// ==========================================
 const playlist = [
     { title: "Megalovania", url: "https://archive.org" },
     { title: "Bonetrousle", url: "https://archive.org" },
@@ -17,6 +23,9 @@ const playlist = [
 let currentTrackIndex = 0;
 let isMuted = false;
 
+// ==========================================
+// 3. NEON AI OPPONENT PROFILES & AVATARS
+// ==========================================
 const botProfiles = [
     { name: "ByteSmasher", color: "#ff3366", avatar: "💥" },
     { name: "GlitchHunter", color: "#00ffcc", avatar: "🛰️" },
@@ -28,6 +37,9 @@ const botProfiles = [
     { name: "NetBreaker", color: "#ff33cc", avatar: "⚡" }
 ];
 
+// ==========================================
+// 4. DICTIONARY WORD MATRIX
+// ==========================================
 const vocabulary = [
     "apple", "banana", "secret", "password", "gaming", "matrix", "shadow", "cyber", 
     "hacker", "portal", "wizard", "purple", "neon", "dragon", "castle", "pixels", 
@@ -38,6 +50,23 @@ const vocabulary = [
     "desert", "canyon", "ocean", "river", "winter", "summer", "autumn", "spring",
     "cipher", "vortex", "system", "crypto", "shield", "bypass", "access", "breach"
 ];
+
+// ==========================================
+// 5. SETUP SCREEN COMPONENT UI INTERACTIONS
+// ==========================================
+function toggleRoleSettings() {
+    const mode = document.getElementById('game-mode').value;
+    const botGroup = document.getElementById('bot-count-group');
+    const passGroup = document.getElementById('password-group');
+    
+    if (mode === "guesser") {
+        botGroup.classList.add('hidden');
+        passGroup.classList.add('hidden');
+    } else {
+        botGroup.classList.remove('hidden');
+        passGroup.classList.remove('hidden');
+    }
+}
 
 function toggleMute() {
     const audio = document.getElementById('bg-music');
@@ -52,44 +81,70 @@ function playNextTrack() {
     currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
     audio.src = playlist[currentTrackIndex].url;
     document.getElementById('track-name').innerText = `🎵 ${playlist[currentTrackIndex].title}`;
-    audio.play().catch(e => console.log("Waiting for touch interact..."));
+    audio.play().catch(e => console.log("Audio waiting for trigger loop..."));
 }
-
+// ==========================================
+// 6. GAME INITIALIZATION ENGINE
+// ==========================================
 function startAiGame() {
-    const passField = document.getElementById('secret-password');
-    secretPassword = passField.value.trim().toLowerCase();
-    if(!secretPassword) return alert("Please type a password first!");
-
-    // Boot audio player timeline
+    currentGameMode = document.getElementById('game-mode').value;
+    difficulty = document.getElementById('difficulty').value;
+    
     const audio = document.getElementById('bg-music');
     audio.src = playlist[currentTrackIndex].url;
-    audio.play().catch(e => console.log("Audio target loaded. Waiting for click interaction."));
-
-    botCount = parseInt(document.getElementById('ai-count').value);
-    difficulty = document.getElementById('difficulty').value;
-
-    aiGuessesLeft = 5 + (botCount * 2);
-    document.getElementById('guesses-left').innerText = aiGuessesLeft;
+    audio.play().catch(e => console.log("Audio bound to user action context."));
 
     document.getElementById('setup-screen').classList.add('hidden');
     document.getElementById('game-play').classList.remove('hidden');
 
-    logSystem(`Match Staged: 1v${botCount} (${difficulty.toUpperCase()}). Firewall scaled to ${aiGuessesLeft} collective tries!`);
-    
     if(!document.getElementById('timer-display')) {
         const timerEl = document.createElement('h4');
         timerEl.id = "timer-display";
         timerEl.style.textAlign = "center";
         timerEl.style.color = "#ff3366";
         timerEl.style.textShadow = "0 0 5px #ff3366";
-        timerEl.innerHTML = "⏳ Firewall T-Minus: <span id='seconds-left'>30</span>s";
+        timerEl.innerHTML = "⏳ Session T-Minus: <span id='seconds-left'>30</span>s";
         document.getElementById('game-play').insertBefore(timerEl, document.getElementById('chat-box'));
     }
-    
-    startRoundTimer();
-    setTimeout(triggerAiTurn, 1200);
+
+    if (currentGameMode === "host") {
+        const passField = document.getElementById('secret-password');
+        secretPassword = passField.value.trim().toLowerCase();
+        if(!secretPassword) {
+            window.location.reload();
+            return alert("Please type a password first!");
+        }
+        
+        botCount = parseInt(document.getElementById('ai-count').value);
+        aiGuessesLeft = 5 + (botCount * 2);
+        document.getElementById('guesses-left').innerText = aiGuessesLeft;
+        
+        document.querySelector('#game-play h3').innerHTML = `Total Collective Guesses Left: <span id="guesses-left">${aiGuessesLeft}</span>`;
+        document.getElementById('chat-input').placeholder = "Give the bots a text hint...";
+        
+        logSystem(`Host Matrix Configured. 1v${botCount} Simulation initialized.`);
+        startRoundTimer();
+        setTimeout(triggerAiTurn, 1200);
+    } else {
+        botCount = 1;
+        aiGuessesLeft = 5;
+        document.getElementById('guesses-left').innerText = aiGuessesLeft;
+        
+        document.querySelector('#game-play h3').innerHTML = `Your Tries Remaining: <span id="guesses-left">${aiGuessesLeft}</span>`;
+        document.getElementById('chat-input').placeholder = "Type your password guess here...";
+        
+        secretPassword = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+        const activeBot = botProfiles[0];
+        
+        appendBotMessage(activeBot.avatar, activeBot.name, activeBot.color, `I have initialized an encrypted mainframe password! It has exactly ${secretPassword.length} characters.`);
+        logSystem("Type a guess word in the box below to attempt a security breakthrough!");
+        startRoundTimer();
+    }
 }
 
+// ==========================================
+// 7. TIME CONTROLLER LOGIC
+// ==========================================
 function startRoundTimer() {
     clearInterval(timerInterval);
     timeLeft = 30;
@@ -102,12 +157,20 @@ function startRoundTimer() {
         
         if(timeLeft <= 0) {
             clearInterval(timerInterval);
-            logAlert("⏰ TIME EXPIRED! Bypassing turn straight to AI calculations.");
-            setTimeout(triggerAiTurn, 1000);
+            if (currentGameMode === "host") {
+                logAlert("⏰ TIME EXPIRED! Bypassing straight to AI calculations.");
+                setTimeout(triggerAiTurn, 1000);
+            } else {
+                logAlert("⏰ TIME EXPIRED! You failed to submit a guess in time. Deducting 1 penalty try!");
+                processGuesserTurn("");
+            }
         }
     }, 1000);
 }
 
+// ==========================================
+// 8. BOTS INTERACTION & INTELLIGENCE BRACKETS
+// ==========================================
 function triggerAiTurn() {
     if(isGameOver) return;
 
@@ -156,21 +219,72 @@ function triggerAiTurn() {
     }
 }
 
+// ==========================================
+// 9. GUESSER BEHAVIOR LOOP & LOGIC FEEDBACK
+// ==========================================
 function sendPlayerHint() {
     if(isGameOver) return;
     const input = document.getElementById('chat-input');
-    const hintText = input.value.trim().toLowerCase();
-    if(!hintText) return;
+    const inputText = input.value.trim().toLowerCase();
+    if(!inputText) return;
 
     clearInterval(timerInterval);
-    appendMessage("👑", "You (Host)", input.value);
-    recentHint = hintText;
-    input.value = "";
 
-    logSystem("System: AI cluster nodes are adjusting target algorithms based on that trace...");
-    setTimeout(triggerAiTurn, 1500);
+    if (currentGameMode === "host") {
+        appendMessage("👑", "You (Host)", input.value);
+        recentHint = inputText;
+        input.value = "";
+        logSystem("System: AI cluster nodes are adjusting target algorithms based on that trace...");
+        setTimeout(triggerAiTurn, 1500);
+    } else {
+        appendMessage("👤", "You (Guesser)", input.value);
+        input.value = "";
+        processGuesserTurn(inputText);
+    }
 }
 
+function processGuesserTurn(playerGuess) {
+    if(isGameOver) return;
+
+    if(playerGuess !== "") {
+        aiGuessesLeft--;
+        document.getElementById('guesses-left').innerText = aiGuessesLeft;
+    }
+
+    const mainBot = botProfiles[0];
+
+    if (playerGuess === secretPassword) {
+        logSystem("🎉 SEAMLESS DECRYPTION COMPLETE! You successfully bypassed the bot mainframe and won!");
+        endGame();
+    } else if (aiGuessesLeft <= 0) {
+        logAlert(`❌ MAINBOARD LOCKOUT! You ran out of tries. The secret password was: "${secretPassword}"`);
+        endGame();
+    } else {
+        let responseHint = "";
+        if (difficulty === "easy" || playerGuess === "") {
+            responseHint = "Access Denied. Incorrect signature token.";
+        } else if (difficulty === "medium") {
+            let sharedLetters = [...playerGuess].filter(char => secretPassword.includes(char)).length;
+            responseHint = `Access Denied. Your entry contains ${sharedLetters} matching character signatures from my mainframe code.`;
+        } else if (difficulty === "hard") {
+            let matchesPosition = 0;
+            for(let i=0; i<Math.min(playerGuess.length, secretPassword.length); i++) {
+                if(playerGuess[i] === secretPassword[i]) matchesPosition++;
+            }
+            responseHint = `Access Denied. Structural analysis detects exactly ${matchesPosition} characters in the correct alignment slot positions.`;
+        }
+        
+        setTimeout(() => {
+            appendBotMessage(mainBot.avatar, mainBot.name, mainBot.color, responseHint);
+            logSystem("Mainframe open for sequential injection. Timer reset.");
+            startRoundTimer();
+        }, 1000);
+    }
+}
+
+// ==========================================
+// 10. RE-USABLE VISUAL APARTMENT LAYOUT PRINTS
+// ==========================================
 function appendMessage(avatar, sender, text) {
     const box = document.getElementById('chat-box');
     const div = document.createElement('div');
