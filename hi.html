@@ -3,195 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Guess Room - The Password Guess</title>
-    <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: #0d001a; 
-            color: #f1f1f1;
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            min-height: 100vh;
-        }
-        .game-container { 
-            background: #1a0033; 
-            padding: 25px; 
-            border-radius: 12px; 
-            border: 2px solid #b300ff;
-            box-shadow: 0 0 20px #b300ff, inset 0 0 10px #590080; 
-            width: 100%; 
-            max-width: 500px; 
-            box-sizing: border-box;
-        }
-        .neon-title {
-            text-align: center;
-            color: #fff;
-            text-shadow: 0 0 5px #fff, 0 0 10px #b300ff, 0 0 20px #b300ff;
-            margin-bottom: 25px;
-            font-size: 2.2rem;
-        }
-        .box { 
-            border: 1px solid #590080; 
-            padding: 20px; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
-            background: #26004d; 
-        }
-        h3 { margin-top: 0; color: #df80ff; }
-        .chat-box { 
-            height: 200px; 
-            overflow-y: auto; 
-            border: 1px solid #590080; 
-            padding: 10px; 
-            background: #0d001a; 
-            margin-bottom: 10px; 
-            border-radius: 6px;
-        }
-        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        input { 
-            flex: 1; padding: 10px; background: #1a0033; color: #fff;
-            border: 1px solid #b300ff; border-radius: 6px; outline: none;
-        }
-        button, .back-btn { 
-            display: inline-block; padding: 12px 20px; background: #b300ff; 
-            color: white; border: none; border-radius: 6px; cursor: pointer; 
-            font-weight: bold; text-align: center; text-decoration: none;
-            box-shadow: 0 0 5px #b300ff; transition: 0.2s ease;
-        }
-        button:hover, .back-btn:hover { background: #d466ff; box-shadow: 0 0 15px #d466ff; }
-        .system-msg { color: #00ffcc; font-weight: bold; font-style: italic; }
-        .alert-msg { color: #ff3366; font-weight: bold; }
-        .hidden { display: none !important; }
-    </style>
+    <title>AI Battle Room - The Password Guess</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="game-container">
-    <h1 class="neon-title">🔑 VS AI Mode</h1>
+    <h1 class="neon-title">🔑 VS AI Battle</h1>
     
-    <!-- Setup Stage -->
+    <!-- Setup Stage Screen -->
     <div id="setup-screen" class="box">
-        <h3>Lock a Password Against AI</h3>
-        <div class="input-group">
-            <input type="password" id="secret-password" placeholder="Enter a word (e.g. apple)...">
-            <button onclick="startAiGame()">Lock It In</button>
+        <h3>Match Parameters</h3>
+        
+        <div class="setting-group">
+            <label for="ai-count">Opponent Bots:</label>
+            <select id="ai-count">
+                <option value="1">1 Bot (1v1)</option>
+                <option value="2">2 Bots (1v2)</option>
+                <option value="4">4 Bots (1v4)</option>
+                <option value="8" selected>8 Bots (1v8)</option>
+            </select>
         </div>
+
+        <div class="setting-group">
+            <label for="difficulty">AI Difficulty:</label>
+            <select id="difficulty">
+                <option value="easy">Easy (Random Guessing)</option>
+                <option value="medium" selected>Medium (Filters Word Length)</option>
+                <option value="hard">Hard (Analyzes Hints + Word Length)</option>
+            </select>
+        </div>
+
+        <div class="setting-group">
+            <label for="secret-password">Your Secret Password:</label>
+            <input type="password" id="secret-password" placeholder="Enter password (e.g. cyber)...">
+        </div>
+
+        <button onclick="startAiGame()" style="width: 100%; margin-top: 10px;">Lock Password & Start Match</button>
         <div style="text-align: center; margin-top: 15px;">
-            <a href="index.html" style="color: #df80ff; text-decoration: none;">← Main Menu</a>
+            <a href="index.html" class="back-link">← Main Menu</a>
         </div>
     </div>
 
-    <!-- Active Stage -->
+    <!-- Active Stage Screen -->
     <div id="game-play" class="hidden">
-        <h3>AI Guesses Left: <span id="guesses-left">5</span></h3>
+        <h3>Total Collective Guesses Left: <span id="guesses-left">5</span></h3>
         <div class="chat-box" id="chat-box"></div>
         
         <div class="input-group">
-            <input type="text" id="chat-input" placeholder="Give the AI a hint text...">
-            <button onclick="sendPlayerHint()">Give Hint</button>
+            <input type="text" id="chat-input" placeholder="Give the bots a text hint...">
+            <button onclick="sendPlayerHint()">Submit Clue</button>
         </div>
 
         <div id="action-panel" class="hidden" style="text-align: center; margin-top: 15px;">
             <button onclick="window.location.reload()">Play Again</button>
+            <a href="index.html" class="back-link" style="margin-left: 15px;">Main Menu</a>
         </div>
     </div>
 </div>
 
-<script>
-    let secretPassword = "";
-    let aiGuessesLeft = 5;
-    let isGameOver = false;
-
-    // AI Knowledge pool 
-    const vocabulary = ["apple", "banana", "secret", "password", "gaming", "matrix", "shadow", "cyber", "hacker", "portal", "wizard", "purple", "neon", "dragon", "castle"];
-
-    function startAiGame() {
-        const passField = document.getElementById('secret-password');
-        secretPassword = passField.value.trim().toLowerCase();
-        if(!secretPassword) return alert("Please type a word first!");
-
-        document.getElementById('setup-screen').classList.add('hidden');
-        document.getElementById('game-play').classList.remove('hidden');
-
-        logSystem("Game Started! The AI is analyzing your password length...");
-        setTimeout(triggerAiTurn, 1500);
-    }
-
-    function triggerAiTurn() {
-        if(isGameOver) return;
-
-        aiGuessesLeft--;
-        document.getElementById('guesses-left').innerText = aiGuessesLeft;
-
-        // Smart guess choice logic
-        let aiGuess = "";
-        const filtered = vocabulary.filter(w => w.length === secretPassword.length);
-        
-        if (filtered.length > 0 && Math.random() > 0.3) {
-            aiGuess = filtered[Math.floor(Math.random() * filtered.length)];
-        } else {
-            aiGuess = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-        }
-
-        appendMessage("🤖 AI Guesser", `Is your password... "${aiGuess}"?`);
-
-        if (aiGuess === secretPassword) {
-            logAlert("❌ AI WON! The AI cracked your password code!");
-            endGame();
-        } else if (aiGuessesLeft <= 0) {
-            logSystem("🎉 YOU WIN! The AI ran out of turns and couldn't crack it!");
-            endGame();
-        } else {
-            logSystem(`AI guessed wrong. Give it a text hint to change its strategy!`);
-        }
-    }
-
-    function sendPlayerHint() {
-        if(isGameOver) return;
-        const input = document.getElementById('chat-input');
-        if(!input.value.trim()) return;
-
-        appendMessage("👤 You (Host)", input.value);
-        input.value = "";
-
-        logSystem("AI is reading your hint...");
-        setTimeout(triggerAiTurn, 2000);
-    }
-
-    function appendMessage(sender, text) {
-        const box = document.getElementById('chat-box');
-        const div = document.createElement('div');
-        div.style.marginBottom = "8px";
-        div.innerHTML = `<strong style="color: #df80ff;">${sender}:</strong> ${text}`;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function logSystem(text) {
-        const box = document.getElementById('chat-box');
-        const div = document.createElement('div');
-        div.className = "system-msg";
-        div.innerText = `System: ${text}`;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function logAlert(text) {
-        const box = document.getElementById('chat-box');
-        const div = document.createElement('div');
-        div.className = "alert-msg";
-        div.innerText = `System: ${text}`;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function endGame() {
-        isGameOver = true;
-        document.getElementById('action-panel').classList.remove('hidden');
-    }
-</script>
+<script src="script.js"></script>
 </body>
 </html>
