@@ -9,12 +9,6 @@
 <body>
 
 <div class="game-container">
-    <!-- Sound Controller Panel -->
-    <div class="audio-panel">
-        <span id="track-name" class="track-ticker">🎵 Megalovania</span>
-        <button id="mute-btn" class="icon-btn" onclick="toggleMute()">🔊</button>
-    </div>
-
     <h1 class="neon-title">🔑 VS AI Battle</h1>
     
     <!-- Setup Stage Screen -->
@@ -22,14 +16,6 @@
         <h3>Match Parameters</h3>
         
         <div class="setting-group">
-            <label for="game-mode">Your Role:</label>
-            <select id="game-mode" onchange="toggleRoleSettings()">
-                <option value="host" selected>Host (You make the password, 1v8 Bots guess)</option>
-                <option value="guesser">Guesser (1v1 Bot makes it, You guess)</option>
-            </select>
-        </div>
-
-        <div id="bot-count-group" class="setting-group">
             <label for="ai-count">Opponent Bots:</label>
             <select id="ai-count">
                 <option value="1">1 Bot (1v1)</option>
@@ -42,18 +28,18 @@
         <div class="setting-group">
             <label for="difficulty">AI Difficulty:</label>
             <select id="difficulty">
-                <option value="easy">Easy (Random Logic)</option>
+                <option value="easy">Easy (Random Guessing)</option>
                 <option value="medium" selected>Medium (Filters Word Length)</option>
-                <option value="hard">Hard (Analyzes Contextual Clues)</option>
+                <option value="hard">Hard (Analyzes Hints + Word Length)</option>
             </select>
         </div>
 
-        <div id="password-group" class="setting-group">
+        <div class="setting-group">
             <label for="secret-password">Your Secret Password:</label>
             <input type="password" id="secret-password" placeholder="Enter password (e.g. cyber)...">
         </div>
 
-        <button onclick="startAiGame()" style="width: 100%; margin-top: 10px;">Start Match</button>
+        <button onclick="startAiGame()" style="width: 100%; margin-top: 10px;">Lock Password & Start Match</button>
         <div style="text-align: center; margin-top: 15px;">
             <a href="index.html" class="back-link">← Main Menu</a>
         </div>
@@ -75,9 +61,6 @@
         </div>
     </div>
 </div>
-
-<!-- Global Background Audio Engine -->
-<audio id="bg-music" onended="playNextTrack()"></audio>
 
 <script src="script.js"></script>
 </body>
