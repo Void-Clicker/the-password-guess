@@ -1,121 +1,150 @@
-body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background: #0d001a; 
-    color: #f1f1f1;
-    margin: 0; 
-    padding: 20px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-    min-height: 100vh;
+let secretPassword = "";
+let aiGuessesLeft = 5;
+let isGameOver = false;
+let difficulty = "medium";
+let botCount = 8;
+let recentHint = "";
+
+const botProfiles = [
+    { name: "ByteSmasher", color: "#ff3366", avatar: "💥" },
+    { name: "GlitchHunter", color: "#00ffcc", avatar: "🛰️" },
+    { name: "CipherViper", color: "#33ff33", avatar: "🐍" },
+    { name: "MatrixRebel", color: "#ffff33", avatar: "🕶️" },
+    { name: "QuantumGhost", color: "#ff9933", avatar: "👻" },
+    { name: "ShadowCode", color: "#cc33ff", avatar: "👤" },
+    { name: "PixelRazor", color: "#3399ff", avatar: "⚔️" },
+    { name: "NetBreaker", color: "#ff33cc", avatar: "⚡" }
+];
+
+const vocabulary = [
+    "apple", "banana", "secret", "password", "gaming", "matrix", "shadow", "cyber", 
+    "hacker", "portal", "wizard", "purple", "neon", "dragon", "castle", "pixels", 
+    "player", "server", "glitch", "arcade", "engine", "coding", "vector", "screen",
+    "orange", "burger", "cookie", "pizza", "coffee", "cheese", "butter", "pencil", 
+    "camera", "guitar", "wallet", "jacket", "island", "planet", "galaxy", "rocket",
+    "monkey", "spider", "rabbit", "kitten", "lizard", "falcon", "forest", "jungle", 
+    "desert", "canyon", "ocean", "river", "winter", "summer", "autumn", "spring",
+    "cipher", "vortex", "system", "crypto", "shield", "bypass", "access", "breach"
+];
+
+function startAiGame() {
+    const passField = document.getElementById('secret-password');
+    secretPassword = passField.value.trim().toLowerCase();
+    if(!secretPassword) return alert("Please type a password first!");
+
+    botCount = parseInt(document.getElementById('ai-count').value);
+    difficulty = document.getElementById('difficulty').value;
+
+    aiGuessesLeft = 5 + (botCount * 2);
+    document.getElementById('guesses-left').innerText = aiGuessesLeft;
+
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('game-play').classList.remove('hidden');
+
+    logSystem(`Match Staged: 1v${botCount} (${difficulty.toUpperCase()}). Firewall scaled to ${aiGuessesLeft} collective tries!`);
+    setTimeout(triggerAiTurn, 1200);
 }
-.game-container { 
-    background: #1a0033; 
-    padding: 25px; 
-    border-radius: 12px; 
-    border: 2px solid #b300ff;
-    box-shadow: 0 0 20px #b300ff, inset 0 0 10px #590080; 
-    width: 100%; 
-    max-width: 550px; 
-    box-sizing: border-box;
+
+function triggerAiTurn() {
+    if(isGameOver) return;
+
+    aiGuessesLeft--;
+    document.getElementById('guesses-left').innerText = aiGuessesLeft;
+
+    const botIndex = Math.floor(Math.random() * botCount);
+    const activeBot = botProfiles[botIndex];
+    let aiGuess = "";
+
+    if (difficulty === "easy") {
+        aiGuess = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+    } 
+    else if (difficulty === "medium") {
+        const filtered = vocabulary.filter(w => w.length === secretPassword.length);
+        if (filtered.length > 0) {
+            aiGuess = filtered[Math.floor(Math.random() * filtered.length)];
+        } else {
+            aiGuess = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+        }
+    } 
+    else if (difficulty === "hard") {
+        let pool = vocabulary.filter(w => w.length === secretPassword.length);
+        if (recentHint) {
+            let contextualMatches = pool.filter(w => [...recentHint].some(char => w.includes(char)));
+            if (contextualMatches.length > 0) pool = contextualMatches;
+        }
+        if (pool.length > 0) {
+            aiGuess = pool[Math.floor(Math.random() * pool.length)];
+        } else {
+            aiGuess = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+        }
+    }
+
+    appendBotMessage(activeBot.avatar, activeBot.name, activeBot.color, `Decryption guess analysis... "${aiGuess}"`);
+
+    if (aiGuess === secretPassword) {
+        logAlert(`❌ BREAKTHROUGH! ${activeBot.avatar} [${activeBot.name}] cracked your security password!`);
+        endGame();
+    } else if (aiGuessesLeft <= 0) {
+        logSystem("🎉 MISSION ACCOMPLISHED! The AI core structures completely depleted their guessing resources!");
+        endGame();
+    } else {
+        logSystem(`[${activeBot.name}] validation failure. Submit an adaptive clue configuration!`);
+    }
 }
-.neon-title {
-    text-align: center;
-    color: #fff;
-    text-shadow: 0 0 5px #fff, 0 0 10px #b300ff, 0 0 20px #b300ff;
-    margin-bottom: 25px;
-    font-size: 2.2rem;
+
+function sendPlayerHint() {
+    if(isGameOver) return;
+    const input = document.getElementById('chat-input');
+    const hintText = input.value.trim().toLowerCase();
+    if(!hintText) return;
+
+    appendMessage("👑", "You (Host)", input.value);
+    recentHint = hintText;
+    input.value = "";
+
+    logSystem("System: AI cluster nodes are adjusting target algorithms based on that trace...");
+    setTimeout(triggerAiTurn, 1500);
 }
-.box { 
-    border: 1px solid #590080; 
-    padding: 20px; 
-    border-radius: 8px; 
-    margin-bottom: 15px; 
-    background: #26004d; 
+
+function appendMessage(avatar, sender, text) {
+    const box = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.style.marginBottom = "8px";
+    div.innerHTML = `<strong>${avatar} ${sender}:</strong> ${text}`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
 }
-.center-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+
+function appendBotMessage(avatar, botName, botColor, text) {
+    const box = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.style.marginBottom = "8px";
+    div.innerHTML = `<span style="color: ${botColor}; text-shadow: 0 0 5px ${botColor};"><strong>${avatar} ${botName}:</strong></span> ${text}`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
 }
-.menu-tagline {
-    font-style: italic;
-    color: #df80ff;
-    margin-bottom: 10px;
-    text-align: center;
+
+function logSystem(text) {
+    const box = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = "system-msg";
+    div.style.marginBottom = "8px";
+    div.innerText = `System: ${text}`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
 }
-.setting-group {
-    margin-bottom: 15px;
+
+function logAlert(text) {
+    const box = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = "alert-msg";
+    div.style.marginBottom = "8px";
+    div.innerText = `System: ${text}`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
 }
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #df80ff;
+
+function endGame() {
+    isGameOver = true;
+    document.getElementById('action-panel').classList.remove('hidden');
 }
-select, input[type="password"], input[type="text"] { 
-    width: 100%;
-    padding: 10px; 
-    background: #1a0033; 
-    color: #fff;
-    border: 1px solid #b300ff; 
-    border-radius: 6px; 
-    outline: none;
-    box-sizing: border-box;
-}
-select:focus, input:focus {
-    box-shadow: 0 0 8px #b300ff;
-}
-.chat-box { 
-    height: 250px; 
-    overflow-y: auto; 
-    border: 1px solid #590080; 
-    padding: 10px; 
-    background: #0d001a; 
-    margin-bottom: 10px; 
-    border-radius: 6px;
-}
-.input-group { 
-    display: flex; 
-    gap: 10px; 
-    margin-bottom: 10px; 
-}
-button, .menu-link { 
-    display: inline-block;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 250px;
-    padding: 12px 20px; 
-    background: #b300ff; 
-    color: white; 
-    border: none; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold;
-    text-align: center;
-    text-decoration: none;
-    font-size: 1rem;
-    text-shadow: 0 0 2px #fff;
-    box-shadow: 0 0 5px #b300ff;
-    transition: 0.2s ease;
-}
-button:hover, .menu-link:hover { 
-    background: #d466ff; 
-    box-shadow: 0 0 15px #d466ff;
-}
-.main-action { background: #b300ff; }
-.secondary-action { background: #4d0080; border: 1px solid #b300ff; }
-.back-link {
-    color: #df80ff;
-    text-decoration: none;
-    font-size: 0.9rem;
-    display: inline-block;
-}
-.back-link:hover {
-    text-decoration: underline;
-    text-shadow: 0 0 5px #b300ff;
-}
-.system-msg { color: #00ffcc; font-weight: bold; font-style: italic; text-shadow: 0 0 2px #00ffcc; }
-.alert-msg { color: #ff3366; font-weight: bold; text-shadow: 0 0 2px #ff3366; }
-.hidden { display: none !important; }
