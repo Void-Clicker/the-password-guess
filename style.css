@@ -1,0 +1,153 @@
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #0d001a; 
+    color: #f1f1f1;
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    min-height: 100vh;
+}
+.game-container { 
+    background: #1a0033; 
+    padding: 25px; 
+    border-radius: 12px; 
+    border: 2px solid #b300ff;
+    box-shadow: 0 0 20px #b300ff, inset 0 0 10px #590080; 
+    width: 100%; 
+    max-width: 500px; 
+    box-sizing: border-box;
+}
+.neon-title {
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #b300ff, 0 0 20px #b300ff;
+    margin-bottom: 25px;
+    font-size: 2.2rem;
+}
+.box { 
+    border: 1px solid #590080; 
+    padding: 20px; 
+    border-radius: 8px; 
+    margin-bottom: 15px; 
+    background: #26004d; 
+}
+.center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+.menu-tagline {
+    font-style: italic;
+    color: #df80ff;
+    margin-bottom: 10px;
+    text-align: center;
+}
+h3 {
+    margin-top: 0;
+    color: #df80ff;
+}
+.rules-list {
+    padding-left: 20px;
+    line-height: 1.6;
+}
+.rules-list li {
+    margin-bottom: 10px;
+}
+.chat-box { 
+    height: 200px; 
+    overflow-y: auto; 
+    border: 1px solid #590080; 
+    padding: 10px; 
+    background: #0d001a; 
+    margin-bottom: 10px; 
+    border-radius: 6px;
+}
+.input-group { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 10px; line-height: normal;
+}
+input { 
+    flex: 1; 
+    padding: 10px; 
+    background: #1a0033;
+    color: #fff;
+    border: 1px solid #b300ff; 
+    border-radius: 6px; 
+    outline: none;
+}
+input:focus {
+    box-shadow: 0 0 8px #b300ff;
+}
+/* Unified button and link style */
+button, .menu-link { 
+    display: inline-block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 250px;
+    padding: 12px 20px; 
+    background: #b300ff; 
+    color: white; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1rem;
+    text-shadow: 0 0 2px #fff;
+    box-shadow: 0 0 5px #b300ff;
+    transition: 0.2s ease;
+}
+button:hover, .menu-link:hover { 
+    background: #d466ff; 
+    box-shadow: 0 0 15px #d466ff;
+}
+button:disabled {
+    background: #444;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+.main-action {
+    background: #b300ff;
+}
+.secondary-action {
+    background: #4d0080;
+    border: 1px solid #b300ff;
+}
+.button-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+.button-row button {
+    flex: 1;
+    max-width: none;
+}
+.back-link {
+    color: #df80ff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-block;
+}
+.back-link:hover {
+    text-decoration: underline;
+    text-shadow: 0 0 5px #b300ff;
+}
+.system-msg { 
+    color: #00ffcc; 
+    font-weight: bold; 
+    font-style: italic; 
+    text-shadow: 0 0 2px #00ffcc;
+}
+.alert-msg {
+    color: #ff3366;
+    font-weight: bold;
+    text-shadow: 0 0 2px #ff3366;
+}
+.hidden { 
+    display: none !important; 
+}

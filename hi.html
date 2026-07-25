@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Room - The Password Guess</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Import Firebase core logic and Realtime Database -->
+    <!-- Load Firebase libraries first -->
+<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com"></script>
+
+<!-- Load your hidden config file -->
+<script src="config.js"></script>
+
+<!-- Load your game logic last -->
+<script src="script.js"></script>
+
+</head>
+<body>
+
+<div class="game-container">
+    <h2 class="neon-title">🔑 Room Gameplay</h2>
+    
+    <!-- Role Selection -->
+    <div id="setup-screen" class="box">
+        <h3>Choose your role:</h3>
+        <div class="button-row">
+            <button onclick="setRole('host')">I am the Host</button>
+            <button onclick="setRole('guesser')">I am the Guesser</button>
+        </div>
+        <div style="margin-top: 15px; text-align: center;">
+            <a href="index.html" class="back-link">← Return to Main Menu</a>
+        </div>
+    </div>
+
+    <!-- Host View (Hidden by Default) -->
+    <div id="host-screen" class="box hidden">
+        <h3>Host Controls</h3>
+        <div class="input-group">
+            <input type="password" id="secret-password" placeholder="Set secret password...">
+            <button onclick="lockPassword()">Lock It In</button>
+        </div>
+        <p id="host-status"></p>
+    </div>
+
+    <!-- Guesser View (Hidden by Default) -->
+    <div id="guesser-screen" class="box hidden">
+        <h3>Make a Guess (<span id="guesses-left">5</span> left)</h3>
+        <div class="input-group">
+            <input type="text" id="guess-input" placeholder="Type your guess...">
+            <button id="guess-btn" onclick="submitGuess()">Guess</button>
+        </div>
+    </div>
+
+    <!-- Shared Chat Area (Hidden by Default) -->
+    <div id="game-play" class="hidden">
+        <h3>Live Chat & Game Feed</h3>
+        <div class="chat-box" id="chat-box">
+            <div class="system-msg">System: Welcome to the game room!</div>
+        </div>
+        <div class="input-group">
+            <input type="text" id="chat-input" placeholder="Type a message or hint...">
+            <button onclick="sendChat()">Send</button>
+        </div>
+        <div id="action-panel" style="text-align: center; margin-top: 10px;" class="hidden">
+            <button onclick="window.location.reload()">Play Again</button>
+            <a href="index.html" class="back-link" style="margin-left: 15px;">Main Menu</a>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
