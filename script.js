@@ -5,7 +5,18 @@ let difficulty = "medium";
 let botCount = 8;
 let recentHint = "";
 
-// Expanded AI Bot Logic Word Dictionary Bank
+// Distinct names and neon hex codes for up to 8 bots
+const botProfiles = [
+    { name: "ByteSmasher", color: "#ff3366" }, // Neon Pink
+    { name: "GlitchHunter", color: "#00ffcc" }, // Neon Cyan
+    { name: "CipherViper", color: "#33ff33" }, // Neon Green
+    { name: "MatrixRebel", color: "#ffff33" }, // Neon Yellow
+    { name: "QuantumGhost", color: "#ff9933" }, // Neon Orange
+    { name: "ShadowCode", color: "#cc33ff" }, // Neon Purple
+    { name: "PixelRazor", color: "#3399ff" }, // Neon Light Blue
+    { name: "NetBreaker", color: "#ff33cc" }  // Neon Magenta
+];
+
 const vocabulary = [
     "apple", "banana", "secret", "password", "gaming", "matrix", "shadow", "cyber", 
     "hacker", "portal", "wizard", "purple", "neon", "dragon", "castle", "pixels", 
@@ -38,11 +49,11 @@ function triggerAiTurn() {
     aiGuessesLeft--;
     document.getElementById('guesses-left').innerText = aiGuessesLeft;
 
-    // Pick a random bot to attempt the password breakthrough
-    const actingBotNum = Math.floor(Math.random() * botCount) + 1;
+    // Pick a random active bot from the allowed count limit
+    const botIndex = Math.floor(Math.random() * botCount);
+    const activeBot = botProfiles[botIndex];
     let aiGuess = "";
 
-    // Core Decision Paths
     if (difficulty === "easy") {
         aiGuess = vocabulary[Math.floor(Math.random() * vocabulary.length)];
     } 
@@ -67,16 +78,16 @@ function triggerAiTurn() {
         }
     }
 
-    appendMessage(`🤖 Bot #${actingBotNum}`, `Scanning database... decryption guess: "${aiGuess}"`);
+    appendBotMessage(activeBot.name, activeBot.color, `Scanning database... decryption guess: "${aiGuess}"`);
 
     if (aiGuess === secretPassword) {
-        logAlert(`❌ BREAKTHROUGH! Bot #${actingBotNum} cracked your security password!`);
+        logAlert(`❌ BREAKTHROUGH! [${activeBot.name}] cracked your security password!`);
         endGame();
     } else if (aiGuessesLeft <= 0) {
-        logSystem("🎉 MISSION ACCOMPLISHED! The AI bots depleted their guessing energy!");
+        logSystem("🎉 MISSION ACCOMPLISHED! The AI cluster depleted their guessing cycles!");
         endGame();
     } else {
-        logSystem(`Bot #${actingBotNum} failed encryption validation. Submit a clue input string.`);
+        logSystem(`[${activeBot.name}] failed encryption validation. Submit a new clue.`);
     }
 }
 
@@ -90,7 +101,7 @@ function sendPlayerHint() {
     recentHint = hintText;
     input.value = "";
 
-    logSystem("AI cluster units are analyzing the new clue structure...");
+    logSystem("AI cluster units are adjusting scanning targets based on that clue...");
     setTimeout(triggerAiTurn, 1500);
 }
 
@@ -99,6 +110,15 @@ function appendMessage(sender, text) {
     const div = document.createElement('div');
     div.style.marginBottom = "8px";
     div.innerHTML = `<strong style="color: #df80ff;">${sender}:</strong> ${text}`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function appendBotMessage(botName, botColor, text) {
+    const box = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.style.marginBottom = "8px";
+    div.innerHTML = `<strong style="color: ${botColor}; text-shadow: 0 0 5px ${botColor};">🤖 ${botName}:</strong> ${text}`;
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
 }
