@@ -13,18 +13,17 @@
     
     <div class="box center-content">
         <p class="menu-tagline">One locks the secret. One cracks the code.</p>
-        <!-- Navigates directly to the game page -->
-        <a href="hi.html" class="menu-link main-action">Enter Room</a>
+        <a href="hi.html" class="menu-link main-action">Enter Game Room</a>
         <button class="menu-btn secondary-action" onclick="toggleHowTo(true)">How to Play</button>
     </div>
 
-    <!-- How To Play Info Panel (Hidden by Default) -->
+    <!-- How To Play Info Panel -->
     <div id="howto-panel" class="box hidden">
         <h3>How to Play</h3>
         <ul class="rules-list">
-            <li><strong>The Host:</strong> Invents a secret password and locks it in. You can type hints in the live chat.</li>
-            <li><strong>The Guesser:</strong> Has exactly 5 attempts to type and crack the correct password.</li>
-            <li><strong>The Chat:</strong> Both players talk in real-time to trade clues and guesses.</li>
+            <li><strong>The Host:</strong> Invents a secret password. You can type hints in the live chat to guide or trick the bots.</li>
+            <li><strong>The AI Bots:</strong> Will systematically try to guess your password code based on their core parameters.</li>
+            <li><strong>Game Over:</strong> You win if the bots run out of collective guess tries. You lose if a bot cracks it!</li>
         </ul>
         <button class="menu-btn" onclick="toggleHowTo(false)">Close Rules</button>
     </div>
@@ -32,12 +31,7 @@
 
 <script>
     function toggleHowTo(show) {
-        const panel = document.getElementById('howto-panel');
-        if (show) {
-            panel.classList.remove('hidden');
-        } else {
-            panel.classList.add('hidden');
-        }
+        document.getElementById('howto-panel').classList.toggle('hidden', !show);
     }
 </script>
 </body>
