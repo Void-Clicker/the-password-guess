@@ -1,13 +1,33 @@
+// ==========================================
+// 1. FIREBASE CONFIGURATION & INITIALIZATION
+// ==========================================
 
+// If config.js is loaded, use its values. Otherwise, initialize in offline safe mode.
+if (typeof firebaseConfig !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    window.database = firebase.database();
+    console.log("Firebase connected successfully!");
+} else {
+    window.database = null;
+    console.warn("Firebase config not found. Running in local/offline sandbox mode.");
+}
 
-// Automatically parse room names from the URL (e.g., hi.html?room=123)
-// If no room is specified in the URL bar, defaults to room 'lobby'
+// Extract the room ID from the URL path parameters (e.g., hi.html?room=cyber-ghost)
 const urlParams = new URLSearchParams(window.location.search);
 const roomID = urlParams.get('room') || 'lobby';
-const roomRef = database.ref('rooms/' + roomID);
+const roomRef = window.database ? window.database.ref('rooms/' + roomID) : null;
 
+// ==========================================
+// 2. CORE GAME STATE VARIABLES
+// ==========================================
 let myRole = '';
+let targetPassword = '';
+let guessesLeft = 5;
 let gameOver = false;
+
+// ==========================================
+// 3. GAMEPLAY FUNCTIONS & ACTIONS
+// ==========================================
 
 function setRole(role) {
     myRole = role;
@@ -16,30 +36,40 @@ function setRole(role) {
     
     if (role === 'host') {
         document.getElementById('host-screen').classList.remove('hidden');
+        logSystem(`You joined as the Host in room: ${roomID}. Set a password!`);
     } else {
         document.getElementById('guesser-screen').classList.remove('hidden');
+        logSystem(`You joined as the Guesser in room: ${roomID}. Cracking code with 5 tries!`);
     }
     
-    // Connect live database pipes
+    // Begin listening for real-time multiplayer updates across the cloud
     listenForRoomUpdates();
 }
 
 function lockPassword() {
+    if (gameOver) return;
     const passInput = document.getElementById('secret-password');
     if (!passInput.value) return;
     
-    // Clear old data and reset room states globally
-    roomRef.child('chat').remove();
+    const formattedPassword = passInput.value.trim().toLowerCase();
     
-    roomRef.update({
-        password: passInput.value.trim().toLowerCase(),
-        guessesLeft: 5,
-        status: "active"
-    });
+    if (window.database && roomRef) {
+        // ONLINE GLOBAL MODE: Sync everything over the internet
+        roomRef.child('chat').remove(); // Clear old chats from previous rounds
+        roomRef.update({
+            password: formattedPassword,
+            guessesLeft: 5,
+            status: "active"
+        });
+        sendSystemNotification("Host has locked in the secret password online!");
+    } else {
+        // OFFLINE BACKUP MODE: Handle mechanics inside this browser tab
+        targetPassword = formattedPassword;
+        logSystem("Host locked in password locally (Offline Mode)!");
+    }
     
-    document.getElementById('host-status').innerText = "Password locked online!";
+    document.getElementById('host-status').innerText = "Password locked in darkness!";
     passInput.disabled = true;
-    sendSystemNotification(`Host has locked in the secret password for room: ${roomID}!`);
 }
 
 function submitGuess() {
@@ -48,26 +78,44 @@ function submitGuess() {
     const guess = guessInput.value.trim().toLowerCase();
     if (!guess) return;
 
-    sendGlobalMessage("Guesser (Guess)", guess);
+    if (window.database && roomRef) {
+        // ONLINE GLOBAL MODE
+        sendGlobalMessage("Guesser (Guess)", guess);
 
-    roomRef.once('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
+        roomRef.once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
 
-        let currentGuesses = data.guessesLeft - 1;
+            let currentGuesses = data.guessesLeft - 1;
+            
+            if (guess === data.password) {
+                roomRef.update({ status: "won" });
+                sendSystemNotification("🎉 CORRECT! The guesser cracked the password!");
+            } else if (currentGuesses <= 0) {
+                roomRef.update({ guessesLeft: 0, status: "lost" });
+                sendSystemNotification(`❌ GAME OVER! The password was: ${data.password}`);
+            } else {
+                roomRef.update({ guessesLeft: currentGuesses });
+                sendSystemNotification(`Wrong guess! Tries remaining: ${currentGuesses}`);
+            }
+        });
+    } else {
+        // OFFLINE BACKUP MODE
+        guessesLeft--;
+        document.getElementById('guesses-left').innerText = guessesLeft;
+        appendMessage("Guesser (Guess)", guess);
         
-        if (guess === data.password) {
-            roomRef.update({ status: "won" });
-            sendSystemNotification("🎉 CORRECT! The guesser cracked the password!");
-        } else if (currentGuesses <= 0) {
-            roomRef.update({ guessesLeft: 0, status: "lost" });
-            sendSystemNotification(`❌ GAME OVER! The password was: ${data.password}`);
+        if (targetPassword && guess === targetPassword) {
+            logSystem("🎉 CORRECT! You cracked it locally!");
+            endGame();
+        } else if (guessesLeft <= 0) {
+            logAlert(`❌ GAME OVER! The password was: ${targetPassword || "[Not set]"}`);
+            endGame();
         } else {
-            roomRef.update({ guessesLeft: currentGuesses });
-            sendSystemNotification(`Wrong guess! Tries remaining: ${currentGuesses}`);
+            logAlert(`Wrong guess! Tries remaining: ${guessesLeft}`);
         }
-    });
-
+    }
+    
     guessInput.value = '';
 }
 
@@ -76,25 +124,41 @@ function sendChat() {
     if (!chatInput.value) return;
     
     const sender = myRole === 'host' ? 'Host' : 'Guesser';
-    sendGlobalMessage(sender, chatInput.value);
+    
+    if (window.database && roomRef) {
+        // Send to online database room
+        sendGlobalMessage(sender, chatInput.value);
+    } else {
+        // Show directly in local interface
+        appendMessage(sender, chatInput.value);
+    }
+    
     chatInput.value = '';
 }
 
+// ==========================================
+// 4. DATABASE SYNC & NETWORK EVENT LISTENERS
+// ==========================================
+
 function sendGlobalMessage(sender, text) {
+    if (!roomRef) return;
     const msgRef = roomRef.child('chat').push();
     msgRef.set({ sender: sender, text: text, type: "user" });
 }
 
 function sendSystemNotification(text) {
+    if (!roomRef) return;
     const msgRef = roomRef.child('chat').push();
     msgRef.set({ text: text, type: "system" });
 }
 
 function listenForRoomUpdates() {
-    // Stop duplicate listener bindings
+    if (!window.database || !roomRef) return;
+
+    // Remove existing event attachments to stay optimized
     roomRef.child('chat').off();
     
-    // Stream message streams instantly
+    // Handle real-time incoming chat traffic streams
     roomRef.child('chat').on('child_added', (snapshot) => {
         const msg = snapshot.val();
         if (msg.type === "system") {
@@ -104,7 +168,7 @@ function listenForRoomUpdates() {
         }
     });
 
-    // Sync live player states
+    // Listen to changing parameters (match endpoints, score tallies)
     roomRef.on('value', (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
@@ -118,6 +182,10 @@ function listenForRoomUpdates() {
         }
     });
 }
+
+// ==========================================
+// 5. INTERFACE MANIPULATION & LOGS
+// ==========================================
 
 function appendMessage(sender, text) {
     const chatBox = document.getElementById('chat-box');
@@ -138,11 +206,23 @@ function logSystem(text) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+function logAlert(text) {
+    const chatBox = document.getElementById('chat-box');
+    const msg = document.createElement('div');
+    msg.className = 'alert-msg';
+    msg.style.marginBottom = '5px';
+    msg.innerText = `System: ${text}`;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 function endGame() {
     gameOver = true;
     const guessBtn = document.getElementById('guess-btn');
     const guessInput = document.getElementById('guess-input');
     if (guessBtn) guessBtn.disabled = true;
     if (guessInput) guessInput.disabled = true;
+    
+    // Reveal the reset links/buttons container
     document.getElementById('action-panel').classList.remove('hidden');
 }
