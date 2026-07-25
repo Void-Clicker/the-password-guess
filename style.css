@@ -16,7 +16,7 @@ body {
     border: 2px solid #b300ff;
     box-shadow: 0 0 20px #b300ff, inset 0 0 10px #590080; 
     width: 100%; 
-    max-width: 500px; 
+    max-width: 550px; 
     box-sizing: border-box;
 }
 .neon-title {
@@ -45,19 +45,30 @@ body {
     margin-bottom: 10px;
     text-align: center;
 }
-h3 {
-    margin-top: 0;
+.setting-group {
+    margin-bottom: 15px;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
     color: #df80ff;
 }
-.rules-list {
-    padding-left: 20px;
-    line-height: 1.6;
+select, input[type="password"], input[type="text"] { 
+    width: 100%;
+    padding: 10px; 
+    background: #1a0033; 
+    color: #fff;
+    border: 1px solid #b300ff; 
+    border-radius: 6px; 
+    outline: none;
+    box-sizing: border-box;
 }
-.rules-list li {
-    margin-bottom: 10px;
+select:focus, input:focus {
+    box-shadow: 0 0 8px #b300ff;
 }
 .chat-box { 
-    height: 200px; 
+    height: 250px; 
     overflow-y: auto; 
     border: 1px solid #590080; 
     padding: 10px; 
@@ -68,21 +79,8 @@ h3 {
 .input-group { 
     display: flex; 
     gap: 10px; 
-    margin-bottom: 10px; line-height: normal;
+    margin-bottom: 10px; 
 }
-input { 
-    flex: 1; 
-    padding: 10px; 
-    background: #1a0033;
-    color: #fff;
-    border: 1px solid #b300ff; 
-    border-radius: 6px; 
-    outline: none;
-}
-input:focus {
-    box-shadow: 0 0 8px #b300ff;
-}
-/* Unified button and link style */
 button, .menu-link { 
     display: inline-block;
     box-sizing: border-box;
@@ -106,27 +104,8 @@ button:hover, .menu-link:hover {
     background: #d466ff; 
     box-shadow: 0 0 15px #d466ff;
 }
-button:disabled {
-    background: #444;
-    box-shadow: none;
-    cursor: not-allowed;
-}
-.main-action {
-    background: #b300ff;
-}
-.secondary-action {
-    background: #4d0080;
-    border: 1px solid #b300ff;
-}
-.button-row {
-    display: flex;
-    gap: 15px;
-    width: 100%;
-}
-.button-row button {
-    flex: 1;
-    max-width: none;
-}
+.main-action { background: #b300ff; }
+.secondary-action { background: #4d0080; border: 1px solid #b300ff; }
 .back-link {
     color: #df80ff;
     text-decoration: none;
@@ -137,17 +116,6 @@ button:disabled {
     text-decoration: underline;
     text-shadow: 0 0 5px #b300ff;
 }
-.system-msg { 
-    color: #00ffcc; 
-    font-weight: bold; 
-    font-style: italic; 
-    text-shadow: 0 0 2px #00ffcc;
-}
-.alert-msg {
-    color: #ff3366;
-    font-weight: bold;
-    text-shadow: 0 0 2px #ff3366;
-}
-.hidden { 
-    display: none !important; 
-}
+.system-msg { color: #00ffcc; font-weight: bold; font-style: italic; text-shadow: 0 0 2px #00ffcc; }
+.alert-msg { color: #ff3366; font-weight: bold; text-shadow: 0 0 2px #ff3366; }
+.hidden { display: none !important; }
