@@ -1,3 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Battle Room - The Password Guess</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="game-container">
+    <!-- Sound Controller Panel -->
+    <div class="audio-panel">
+        <span id="track-name" class="track-ticker">🎵 Megalovania</span>
+        <button id="mute-btn" class="icon-btn" onclick="toggleMute()">🔊</button>
+    </div>
+
+    <h1 class="neon-title">🔑 VS AI Battle</h1>
+    
     <!-- Setup Stage Screen -->
     <div id="setup-screen" class="box">
         <h3>Match Parameters</h3>
@@ -39,3 +58,27 @@
             <a href="index.html" class="back-link">← Main Menu</a>
         </div>
     </div>
+
+    <!-- Active Stage Screen -->
+    <div id="game-play" class="hidden">
+        <h3>Total Collective Guesses Left: <span id="guesses-left">5</span></h3>
+        <div class="chat-box" id="chat-box"></div>
+        
+        <div class="input-group">
+            <input type="text" id="chat-input" placeholder="Give the bots a text hint...">
+            <button onclick="sendPlayerHint()">Submit Clue</button>
+        </div>
+
+        <div id="action-panel" class="hidden" style="text-align: center; margin-top: 15px;">
+            <button onclick="window.location.reload()">Play Again</button>
+            <a href="index.html" class="back-link" style="margin-left: 15px;">Main Menu</a>
+        </div>
+    </div>
+</div>
+
+<!-- Global Background Audio Engine -->
+<audio id="bg-music" onended="playNextTrack()"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>
